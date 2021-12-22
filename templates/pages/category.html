@@ -36,6 +36,10 @@ category:
         <button class='remove-all-items-button' data-cart='{{cart_id}}' onClick={removeAllItems(this)}>Remove All Items</button>
         {{/if}}
     </div>
+    <div class='notification-container'>
+        <div class='notification'></div>
+    </div>
+    
     
     {{{region name="category_below_header"}}}
 {{/unless}}
@@ -75,6 +79,8 @@ category:
 
     addAllToCart = (e) => {
 
+            let message = document.querySelector('.notification');
+
             let cartId = e.getAttribute('data-cart');
             let url = cartId ? `/api/storefront/carts/${cartId}/items` : `/api/storefront/cart`;
             
@@ -98,13 +104,23 @@ category:
 
             return fetch(url, options)
             .then(res => res.json)
-            .then(json => window.location.reload());
+            .then(msg => {
+                message.innerHTML = 'Success, your items have been added!';
+                message.style.background = 'green';
+            })
+            .then(json => setTimeout(() => window.location.reload(), 1500) )
+            .catch(msg => {
+                message.innerHTML = "We apologize, we were unable to add you items."
+            })
     }
 
     removeAllItems = (e) => {
 
+            let message = document.querySelector('.notification');
+
             let cartId = e.getAttribute('data-cart');
             let url = `/api/storefront/carts/${cartId}`;
+
             let options = {
                 method: 'DELETE',
                 credentials: 'include',
@@ -115,7 +131,14 @@ category:
 
             return fetch(url, options)
             .then(res => res.json)
-            .then(json => window.location.reload());
+            .then(msg => {
+                message.innerHTML = 'Success, your items have been removed!';
+                message.style.background = 'green';
+            })
+            .then(json => setTimeout(() => window.location.reload(), 1500))
+            .catch(msg => {
+                message.innerHTML = "We apologize, we were unable to remove you items."
+            })
     }
 
 </script>
