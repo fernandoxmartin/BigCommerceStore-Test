@@ -4,6 +4,7 @@ category:
     products:
         limit: {{theme_settings.categorypage_products_per_page}}
 ---
+
 {{inject "categoryProductsPerPage" theme_settings.categorypage_products_per_page}}
 {{inject "categoryId" category.id}}
 {{#partial "head"}}
@@ -30,8 +31,10 @@ category:
 {{#unless theme_settings.hide_category_page_heading }}
     <h1 class="page-heading">{{category.name}}</h1>
     <div class='add-remove-buttons'>
-        <button class='add-all-to-cart-button' data-products='{{json category.products}}' data-cart='{{cart_id}}' onClick='AddAllToCart(this)'>Add All To Cart</button>
-        <button class='remove-all-items-button'>Remove All Items</button>
+        <button class='add-all-to-cart-button' data-products='{{json category.products}}' data-cart='{{cart_id}}' onClick={addAllToCart(this)} >Add All To Cart</button>
+        {{#if cart_id}}
+        <button class='remove-all-items-button' data-cart='{{cart_id}}' onClick={removeAllItems(this)}>Remove All Items</button>
+        {{/if}}
     </div>
     
     {{{region name="category_below_header"}}}
@@ -70,12 +73,11 @@ category:
         return JSON.stringify(context);
     });
 
-    AddAllToCart = (e) => {
+    addAllToCart = (e) => {
 
             let cartId = e.getAttribute('data-cart');
             let url = cartId ? `/api/storefront/carts/${cartId}/items` : `/api/storefront/cart`;
             
-
             let data = JSON.parse(e.getAttribute('data-products'));
             let dataArr = data.map(item => item.id);
 
@@ -85,7 +87,6 @@ category:
                     productId: id
                 }))
             };
-
             let options = {
                 method: 'POST',
                 body: JSON.stringify(itemData),
@@ -97,7 +98,24 @@ category:
 
             return fetch(url, options)
             .then(res => res.json)
-            .then(json => location.reload());
+            .then(json => window.location.reload());
+    }
+
+    removeAllItems = (e) => {
+
+            let cartId = e.getAttribute('data-cart');
+            let url = `/api/storefront/carts/${cartId}`;
+            let options = {
+                method: 'DELETE',
+                credentials: 'include',
+                header: {
+                    'Content-Type': 'application/json'
+                }
+            }
+
+            return fetch(url, options)
+            .then(res => res.json)
+            .then(json => window.location.reload());
     }
 
 </script>
