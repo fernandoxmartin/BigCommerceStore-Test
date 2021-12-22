@@ -26,8 +26,14 @@ category:
         class="category-header-image"
     }}
 {{/if}}
+
 {{#unless theme_settings.hide_category_page_heading }}
     <h1 class="page-heading">{{category.name}}</h1>
+    <div class='add-remove-buttons'>
+        <button class='add-all-to-cart-button' data-products='{{json category.products}}' data-cart='{{cart_id}}' onClick='AddAllToCart(this)'>Add All To Cart</button>
+        <button class='remove-all-items-button'>Remove All Items</button>
+    </div>
+    
     {{{region name="category_below_header"}}}
 {{/unless}}
 {{{category.description}}}
@@ -56,3 +62,42 @@ category:
 
 {{/partial}}
 {{> layout/base}}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js" integrity="sha512-RNLkV3d+aLtfcpEyFG8jRbnWHxUqVZozacROI4J2F1sTaDqo1dPQYs01OMi1t1w9Y2FdbSCDSQ2ZVdAC8bzgAg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+
+    Handlebars.registerHelper('json', (context) => {
+        return JSON.stringify(context);
+    });
+
+    AddAllToCart = (e) => {
+
+            let cartId = e.getAttribute('data-cart');
+            let url = cartId ? `/api/storefront/carts/${cartId}/items` : `/api/storefront/cart`;
+            
+
+            let data = JSON.parse(e.getAttribute('data-products'));
+            let dataArr = data.map(item => item.id);
+
+            let itemData = {
+                lineItems: dataArr.map((id) => ({
+                    quantity: 1,
+                    productId: id
+                }))
+            };
+
+            let options = {
+                method: 'POST',
+                body: JSON.stringify(itemData),
+                credentials: 'include',
+                header: {
+                    'Content-Type': 'application/json'
+                }
+            }
+
+            return fetch(url, options)
+            .then(res => res.json)
+            .then(json => location.reload());
+    }
+
+</script>
